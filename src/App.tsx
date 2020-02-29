@@ -1,4 +1,5 @@
 import React from "react";
+import classNames from "classnames";
 
 import algs, { Alg } from "./algs";
 import * as Util from "./util";
@@ -20,18 +21,6 @@ interface Timer {
   timer: number;
 }
 
-const Timer: React.FC<{ timer: Timer }> = props => {
-  if (props.timer.status === TimerStatus.Initial) {
-    return <div>Ready</div>;
-  }
-
-  if (props.timer.status === TimerStatus.Ready) {
-    return <div className="text-green-500">{props.timer.timer}</div>;
-  }
-
-  return <div>{props.timer.timer}</div>;
-};
-
 const initialTimer = (): Timer => {
   return { status: TimerStatus.Initial, timer: 0 };
 };
@@ -52,6 +41,10 @@ const increaseTimer = (timer: Timer): Timer => {
   return { status: TimerStatus.Running, timer: timer.timer + 1 };
 };
 
+const isInitial = (timer: Timer): boolean => {
+  return timer.status === TimerStatus.Initial;
+};
+
 const isRunning = (timer: Timer): boolean => {
   return timer.status === TimerStatus.Running;
 };
@@ -59,6 +52,62 @@ const isRunning = (timer: Timer): boolean => {
 const isReady = (timer: Timer): boolean => {
   return timer.status === TimerStatus.Ready;
 };
+
+const format = (timer: Timer): string => {
+  const seconds = Math.floor(timer.timer / 100);
+  const deciSeconds = timer.timer % 100;
+  const paddedDeciSeconds = deciSeconds < 10 ? `0${deciSeconds}` : deciSeconds;
+
+  return `${seconds}.${paddedDeciSeconds}`;
+};
+
+const Timer: React.FC<{ timer: Timer }> = props => {
+  return (
+    <div
+      className={classNames([
+        "text-4xl",
+        "font-mono",
+        { "text-green-700": isReady(props.timer) }
+      ])}
+    >
+      {isInitial(props.timer) ? "Ready" : format(props.timer)}
+    </div>
+  );
+};
+
+/*
+|------------------------------------------------------------------------------
+| Algorithm
+|------------------------------------------------------------------------------
+*/
+const Algorithm: React.FC<{ alg: Alg }> = React.memo(props => {
+  const moves = props.alg.scramble.split(" ");
+  return (
+    <>
+      <div className="mb-5 flex">
+        {moves.map((move, idx) => {
+          return (
+            <div
+              className={classNames(["text-3xl", { "ml-6": idx !== 0 }])}
+              key={idx}
+            >
+              {move}
+            </div>
+          );
+        })}
+      </div>
+      <img
+        className="block mb-10"
+        src={
+          process.env.PUBLIC_URL +
+          "/assets/f2lcases/" +
+          props.alg.image +
+          ".png"
+        }
+      />
+    </>
+  );
+});
 
 /*
 |------------------------------------------------------------------------------
@@ -151,7 +200,7 @@ function App() {
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("keyup", onKeyUp);
     };
-  });
+  }, [state.timer]);
 
   React.useEffect(() => {
     if (isRunning(state.timer)) {
@@ -164,31 +213,11 @@ function App() {
         clearInterval(intervalId);
       };
     }
-  }, [state.timer.status]);
+  }, [state.timer]);
 
   return (
-    <div>
-      <h1 className="text-3xl">Scramble: {state.currentAlg.scramble}</h1>
-      <img
-        src={
-          process.env.PUBLIC_URL +
-          "/assets/f2lcases/" +
-          state.currentAlg.image +
-          ".png"
-        }
-      />
-      <button
-        className="border-gray-900 border-2 p-4"
-        onClick={() => {
-          if (isRunning(state.timer)) {
-            dispatch({ type: ActionType.StopTimer });
-          } else {
-            dispatch({ type: ActionType.StartTimer });
-          }
-        }}
-      >
-        {isRunning(state.timer) ? "Stop timer" : "Start timer"}
-      </button>
+    <div className="mx-auto w-128 flex flex-col items-center pt-5">
+      <Algorithm alg={state.currentAlg} />
       <Timer timer={state.timer} />
     </div>
   );
