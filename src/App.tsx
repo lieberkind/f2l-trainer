@@ -5,19 +5,74 @@ import * as Util from "./util";
 
 /*
 |------------------------------------------------------------------------------
+| Timer
+|------------------------------------------------------------------------------
+*/
+enum TimerStatus {
+  Initial,
+  Ready,
+  Running,
+  Stopped
+}
+
+interface Timer {
+  status: TimerStatus;
+  timer: number;
+}
+
+const Timer: React.FC<{ timer: Timer }> = props => {
+  if (props.timer.status === TimerStatus.Initial) {
+    return <div>Ready</div>;
+  }
+
+  if (props.timer.status === TimerStatus.Ready) {
+    return <div className="text-green-500">{props.timer.timer}</div>;
+  }
+
+  return <div>{props.timer.timer}</div>;
+};
+
+const initialTimer = (): Timer => {
+  return { status: TimerStatus.Initial, timer: 0 };
+};
+
+const stopTimer = (timer: Timer): Timer => {
+  return { ...timer, status: TimerStatus.Stopped };
+};
+
+const startTimer = (timer: Timer): Timer => {
+  return { ...timer, status: TimerStatus.Running };
+};
+
+const readyTimer = (timer: Timer): Timer => {
+  return { ...timer, status: TimerStatus.Ready, timer: 0 };
+};
+
+const increaseTimer = (timer: Timer): Timer => {
+  return { status: TimerStatus.Running, timer: timer.timer + 1 };
+};
+
+const isRunning = (timer: Timer): boolean => {
+  return timer.status === TimerStatus.Running;
+};
+
+const isReady = (timer: Timer): boolean => {
+  return timer.status === TimerStatus.Ready;
+};
+
+/*
+|------------------------------------------------------------------------------
 | State
 |------------------------------------------------------------------------------
 */
 interface State {
   currentAlg: Alg;
-  timer: number;
-  timerIsRunning: boolean;
+  timer: Timer;
 }
 
 const initialState = {
   currentAlg: algs[Util.getRandomInt(algs.length)],
-  timer: 0,
-  timerIsRunning: false
+  timer: initialTimer()
 };
 
 /*
@@ -28,13 +83,15 @@ const initialState = {
 enum ActionType {
   StartTimer,
   StopTimer,
-  IncreaseTimer
+  IncreaseTimer,
+  ReadyTimer
 }
 
 type Action =
   | { type: ActionType.StartTimer }
   | { type: ActionType.StopTimer }
-  | { type: ActionType.IncreaseTimer };
+  | { type: ActionType.IncreaseTimer }
+  | { type: ActionType.ReadyTimer };
 
 /*
 |------------------------------------------------------------------------------
@@ -46,19 +103,21 @@ const reducer = (state: State, action: Action): State => {
     case ActionType.StartTimer: {
       return {
         ...state,
-        timerIsRunning: true,
-        timer: 0
+        timer: startTimer(state.timer)
       };
     }
     case ActionType.StopTimer: {
       return {
         ...state,
-        timerIsRunning: false,
+        timer: stopTimer(state.timer),
         currentAlg: algs[Util.getRandomInt(algs.length)]
       };
     }
     case ActionType.IncreaseTimer: {
-      return { ...state, timer: state.timer + 1 };
+      return { ...state, timer: increaseTimer(state.timer) };
+    }
+    case ActionType.ReadyTimer: {
+      return { ...state, timer: readyTimer(state.timer) };
     }
     default:
       return state;
@@ -69,25 +128,33 @@ function App() {
   const [state, dispatch] = React.useReducer(reducer, initialState);
 
   React.useEffect(() => {
-    const toggleTimer = (e: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
       if (e.keyCode === 32) {
-        if (state.timerIsRunning) {
+        if (isRunning(state.timer)) {
           dispatch({ type: ActionType.StopTimer });
         } else {
-          dispatch({ type: ActionType.StartTimer });
+          dispatch({ type: ActionType.ReadyTimer });
         }
       }
     };
 
-    document.addEventListener("keydown", toggleTimer);
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.keyCode === 32 && isReady(state.timer)) {
+        dispatch({ type: ActionType.StartTimer });
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keyup", onKeyUp);
 
     return () => {
-      document.removeEventListener("keydown", toggleTimer);
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keyup", onKeyUp);
     };
   });
 
   React.useEffect(() => {
-    if (state.timerIsRunning) {
+    if (isRunning(state.timer)) {
       const intervalId = setInterval(() => {
         dispatch({ type: ActionType.IncreaseTimer });
       }, 10);
@@ -97,7 +164,7 @@ function App() {
         clearInterval(intervalId);
       };
     }
-  }, [state.timerIsRunning]);
+  }, [state.timer.status]);
 
   return (
     <div>
@@ -113,16 +180,16 @@ function App() {
       <button
         className="border-gray-900 border-2 p-4"
         onClick={() => {
-          if (state.timerIsRunning) {
+          if (isRunning(state.timer)) {
             dispatch({ type: ActionType.StopTimer });
           } else {
             dispatch({ type: ActionType.StartTimer });
           }
         }}
       >
-        {state.timerIsRunning ? "Stop timer" : "Start timer"}
+        {isRunning(state.timer) ? "Stop timer" : "Start timer"}
       </button>
-      Timer {state.timer}
+      <Timer timer={state.timer} />
     </div>
   );
 }
