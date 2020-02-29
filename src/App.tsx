@@ -100,7 +100,7 @@ const Algorithm: React.FC<{ alg: Alg }> = React.memo(props => {
         className="block mb-10"
         src={
           process.env.PUBLIC_URL +
-          "/assets/f2lcases/" +
+          "/assets/fl2cases2/" +
           props.alg.image +
           ".png"
         }
@@ -202,18 +202,19 @@ function App() {
     };
   }, [state.timer]);
 
+  const isTimerRunning = isRunning(state.timer);
+
   React.useEffect(() => {
-    if (isRunning(state.timer)) {
+    if (isTimerRunning) {
       const intervalId = setInterval(() => {
         dispatch({ type: ActionType.IncreaseTimer });
       }, 10);
 
       return () => {
-        console.log("I am called...");
         clearInterval(intervalId);
       };
     }
-  }, [state.timer]);
+  }, [isTimerRunning]);
 
   return (
     <div className="mx-auto w-128 flex flex-col items-center pt-5">
