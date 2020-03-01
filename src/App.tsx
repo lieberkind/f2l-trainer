@@ -53,10 +53,11 @@ const isReady = (timer: Timer): boolean => {
   return timer.status === TimerStatus.Ready;
 };
 
-const format = (timer: Timer): string => {
-  const seconds = Math.floor(timer.timer / 100);
-  const deciSeconds = timer.timer % 100;
-  const paddedDeciSeconds = deciSeconds < 10 ? `0${deciSeconds}` : deciSeconds;
+const format = (time: number): string => {
+  const seconds = Math.floor(time / 100);
+  const deciSeconds = time % 100;
+  const paddedDeciSeconds =
+    deciSeconds < 10 ? `0${Math.round(deciSeconds)}` : Math.round(deciSeconds);
 
   return `${seconds}.${paddedDeciSeconds}`;
 };
@@ -70,7 +71,7 @@ const Timer: React.FC<{ timer: Timer }> = props => {
         { "text-green-700": isReady(props.timer) }
       ])}
     >
-      {isInitial(props.timer) ? "Ready" : format(props.timer)}
+      {isInitial(props.timer) ? "Ready" : format(props.timer.timer)}
     </div>
   );
 };
@@ -127,6 +128,44 @@ const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean }> = React.memo(
 
 /*
 |------------------------------------------------------------------------------
+| Time
+|------------------------------------------------------------------------------
+*/
+interface Time {
+  recordedAt: number;
+  timeInDeciSeconds: number;
+  alg: Alg;
+}
+
+const Times: React.FC<{ times: Time[] }> = props => {
+  const sumOfTimes = props.times
+    .map(time => time.timeInDeciSeconds)
+    .reduce(sum, 0);
+  const avarage =
+    props.times.length === 0 ? 0 : sumOfTimes / props.times.length;
+
+  return (
+    <div className="flex flex-col">
+      <h3 className="text-2xl">
+        Times <span className="text-gray-500">avg: {format(avarage)}</span>
+      </h3>
+      <div className="flex-grow flex-shrink overflow-y-scroll">
+        {props.times.map(time => {
+          return (
+            <div className="inline-block text px-2 py-1 mb-1 bg-red-200 rounded-sm mr-1 text-sm">
+              {format(time.timeInDeciSeconds)}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const sum = (a: number, b: number) => a + b;
+
+/*
+|------------------------------------------------------------------------------
 | Settings
 |------------------------------------------------------------------------------
 */
@@ -155,12 +194,14 @@ interface State {
   currentAlg: Alg;
   timer: Timer;
   showSolutions: boolean;
+  times: Time[];
 }
 
 const initialState: State = {
   currentAlg: algs[Util.getRandomInt(algs.length)],
   timer: initialTimer(),
-  showSolutions: true
+  showSolutions: true,
+  times: []
 };
 
 /*
@@ -178,7 +219,7 @@ enum ActionType {
 
 type Action =
   | { type: ActionType.StartTimer }
-  | { type: ActionType.StopTimer }
+  | { type: ActionType.StopTimer; stoppedAt: number }
   | { type: ActionType.IncreaseTimer }
   | { type: ActionType.ReadyTimer }
   | { type: ActionType.ToggleShowSolutions };
@@ -197,10 +238,17 @@ const reducer = (state: State, action: Action): State => {
       };
     }
     case ActionType.StopTimer: {
+      const time: Time = {
+        recordedAt: action.stoppedAt,
+        timeInDeciSeconds: state.timer.timer,
+        alg: state.currentAlg
+      };
+
       return {
         ...state,
         timer: stopTimer(state.timer),
-        currentAlg: algs[Util.getRandomInt(algs.length)]
+        currentAlg: algs[Util.getRandomInt(algs.length)],
+        times: [...state.times, time]
       };
     }
     case ActionType.IncreaseTimer: {
@@ -217,6 +265,11 @@ const reducer = (state: State, action: Action): State => {
   }
 };
 
+/*
+|------------------------------------------------------------------------------
+| App
+|------------------------------------------------------------------------------
+*/
 function App() {
   const [state, dispatch] = React.useReducer(reducer, initialState);
 
@@ -225,10 +278,10 @@ function App() {
 
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      e.preventDefault();
       if (e.keyCode === 32) {
+        e.preventDefault();
         if (isTimerRunning) {
-          dispatch({ type: ActionType.StopTimer });
+          dispatch({ type: ActionType.StopTimer, stoppedAt: Date.now() });
         } else {
           dispatch({ type: ActionType.ReadyTimer });
         }
@@ -263,12 +316,20 @@ function App() {
   }, [isTimerRunning]);
 
   return (
-    <div className="mx-auto flex flex-col items-center justify-between pt-5 pb-5 h-screen">
-      <div className="flex flex-col items-center">
-        <Algorithm alg={state.currentAlg} showSolutions={state.showSolutions} />
-        <Timer timer={state.timer} />
+    <div className="h-screen flex">
+      <div className="mx-auto flex py-2 flex-col items-center justify-between">
+        <div className="flex flex-col items-center">
+          <Algorithm
+            alg={state.currentAlg}
+            showSolutions={state.showSolutions}
+          />
+          <Timer timer={state.timer} />
+        </div>
+        <Settings showSolutions={state.showSolutions} dispatch={dispatch} />
       </div>
-      <Settings showSolutions={state.showSolutions} dispatch={dispatch} />
+      <div className="h-screen border-l-2 border-gray-300 p-2 w-64">
+        <Times times={state.times} />
+      </div>
     </div>
   );
 }

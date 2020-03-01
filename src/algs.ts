@@ -4,6 +4,11 @@ export interface Alg {
   solutions: string[];
 }
 
+export interface AlgSet {
+  title: string;
+  algs: Alg[];
+}
+
 const algs: Alg[] = [
   {
     image: "1",
@@ -219,7 +224,7 @@ const algs: Alg[] = [
   },
   {
     image: "31",
-    scramble: `R U' R' U R U' R`,
+    scramble: `R U' R' U R U' R'`,
     solutions: [
       `(R U R') U' (R U R')`,
       `y (L F' L' F)2`,
