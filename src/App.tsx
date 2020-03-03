@@ -1,8 +1,9 @@
 import React from "react";
 import classNames from "classnames";
 
-import algs, { Alg } from "./algs";
+import algs, { Alg, AlgId, algSets } from "./algs";
 import * as Util from "./util";
+import CasesModal, { Props as CasesModalInputProps } from "./CasesModal";
 
 /*
 |------------------------------------------------------------------------------
@@ -105,12 +106,7 @@ const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean }> = React.memo(
         <div className="flex items-center mb-10">
           <img
             className="block"
-            src={
-              process.env.PUBLIC_URL +
-              "/assets/fl2cases2/" +
-              props.alg.image +
-              ".png"
-            }
+            src={`${process.env.PUBLIC_URL}/assets/fl2cases2/${props.alg.id}.png`}
           />
           {props.showSolutions ? (
             <ul className="ml-10">
@@ -175,13 +171,24 @@ const Settings: React.FC<{
 }> = React.memo(props => {
   const toggleShowSolutions = () =>
     props.dispatch({ type: ActionType.ToggleShowSolutions });
+
+  const showCasesModal = () =>
+    props.dispatch({ type: ActionType.ShowCasesModal });
   return (
-    <button
-      className="border-gray-500 border-2 p-2 bg-gray-600"
-      onClick={toggleShowSolutions}
-    >
-      {props.showSolutions ? "Hide solutions" : "Show solutions"}
-    </button>
+    <div className="flex">
+      <button
+        className="border-blue-500 border-2 p-2 bg-blue-600 text-white rounded-full"
+        onClick={toggleShowSolutions}
+      >
+        {props.showSolutions ? "Hide solutions" : "Show solutions"}
+      </button>
+      <button
+        className="border-blue-500 border-2 p-2 bg-blue-600 text-white rounded-full"
+        onClick={showCasesModal}
+      >
+        Select cases...
+      </button>
+    </div>
   );
 });
 
@@ -191,17 +198,28 @@ const Settings: React.FC<{
 |------------------------------------------------------------------------------
 */
 interface State {
+  algsToTrain: AlgId[];
   currentAlg: Alg;
   timer: Timer;
   showSolutions: boolean;
   times: Time[];
+  showCasesModal: boolean;
 }
 
+const initialAlgsToTrain = algs.filter(alg =>
+  algSets[4].algIds.includes(alg.id)
+);
+
+const initialAlg =
+  initialAlgsToTrain[Util.getRandomInt(initialAlgsToTrain.length)];
+
 const initialState: State = {
-  currentAlg: algs[Util.getRandomInt(algs.length)],
+  algsToTrain: algSets[4].algIds,
+  currentAlg: initialAlg,
   timer: initialTimer(),
   showSolutions: true,
-  times: []
+  times: [],
+  showCasesModal: false
 };
 
 /*
@@ -214,7 +232,10 @@ enum ActionType {
   StopTimer,
   IncreaseTimer,
   ReadyTimer,
-  ToggleShowSolutions
+  ToggleShowSolutions,
+  SetAlgsToTrain,
+  ShowCasesModal,
+  HideCasesModal
 }
 
 type Action =
@@ -222,7 +243,10 @@ type Action =
   | { type: ActionType.StopTimer; stoppedAt: number }
   | { type: ActionType.IncreaseTimer }
   | { type: ActionType.ReadyTimer }
-  | { type: ActionType.ToggleShowSolutions };
+  | { type: ActionType.ToggleShowSolutions }
+  | { type: ActionType.SetAlgsToTrain; algsToTrain: AlgId[] }
+  | { type: ActionType.ShowCasesModal }
+  | { type: ActionType.HideCasesModal };
 
 /*
 |------------------------------------------------------------------------------
@@ -244,10 +268,15 @@ const reducer = (state: State, action: Action): State => {
         alg: state.currentAlg
       };
 
+      const nextAlgId =
+        state.algsToTrain[Util.getRandomInt(state.algsToTrain.length)];
+
+      const nextAlg = algs.find(alg => alg.id === nextAlgId) ?? algs[0];
+
       return {
         ...state,
         timer: stopTimer(state.timer),
-        currentAlg: algs[Util.getRandomInt(algs.length)],
+        currentAlg: nextAlg,
         times: [...state.times, time]
       };
     }
@@ -259,6 +288,24 @@ const reducer = (state: State, action: Action): State => {
     }
     case ActionType.ToggleShowSolutions: {
       return { ...state, showSolutions: !state.showSolutions };
+    }
+    case ActionType.SetAlgsToTrain: {
+      const nextAlgId =
+        action.algsToTrain[Util.getRandomInt(action.algsToTrain.length)];
+
+      const nextAlg = algs.find(alg => alg.id === nextAlgId) ?? algs[0];
+
+      return {
+        ...state,
+        currentAlg: nextAlg,
+        algsToTrain: action.algsToTrain
+      };
+    }
+    case ActionType.ShowCasesModal: {
+      return { ...state, showCasesModal: true };
+    }
+    case ActionType.HideCasesModal: {
+      return { ...state, showCasesModal: false };
     }
     default:
       return state;
@@ -316,20 +363,32 @@ function App() {
   }, [isTimerRunning]);
 
   return (
-    <div className="h-screen flex">
-      <div className="mx-auto flex py-2 flex-col items-center justify-between">
-        <div className="flex flex-col items-center">
-          <Algorithm
-            alg={state.currentAlg}
-            showSolutions={state.showSolutions}
-          />
-          <Timer timer={state.timer} />
+    <div>
+      <div className="h-screen w-full flex">
+        <div className="mx-auto flex py-2 flex-col items-center justify-between">
+          <div className="flex flex-col items-center">
+            <Algorithm
+              alg={state.currentAlg}
+              showSolutions={state.showSolutions}
+            />
+            <Timer timer={state.timer} />
+          </div>
+          <Settings showSolutions={state.showSolutions} dispatch={dispatch} />
         </div>
-        <Settings showSolutions={state.showSolutions} dispatch={dispatch} />
+        <div className="h-screen border-l-2 border-gray-300 p-2 w-64">
+          <Times times={state.times} />
+        </div>
       </div>
-      <div className="h-screen border-l-2 border-gray-300 p-2 w-64">
-        <Times times={state.times} />
-      </div>
+      {state.showCasesModal ? (
+        <CasesModal
+          allCases={algs}
+          casesToTrain={state.algsToTrain}
+          onCloseModal={algsToTrain => {
+            dispatch({ type: ActionType.HideCasesModal });
+            dispatch({ type: ActionType.SetAlgsToTrain, algsToTrain });
+          }}
+        ></CasesModal>
+      ) : null}
     </div>
   );
 }

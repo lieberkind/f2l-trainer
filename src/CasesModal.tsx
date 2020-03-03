@@ -1,0 +1,139 @@
+import React from "react";
+import classNames from "classnames";
+
+import { Alg, AlgId } from "./algs";
+
+/*
+|------------------------------------------------------------------------------
+| State
+|------------------------------------------------------------------------------
+*/
+interface State {
+  casesToTrain: AlgId[];
+}
+
+/*
+|------------------------------------------------------------------------------
+| Actions
+|------------------------------------------------------------------------------
+*/
+enum ActionType {
+  SelectCase,
+  SelectCases,
+  RemoveCase
+}
+
+type Action =
+  | { type: ActionType.SelectCase; caseId: AlgId }
+  | { type: ActionType.SelectCases; caseIds: AlgId[] }
+  | { type: ActionType.RemoveCase; caseId: AlgId };
+
+/*
+|------------------------------------------------------------------------------
+| Reducer
+|------------------------------------------------------------------------------
+*/
+const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case ActionType.SelectCase: {
+      return { ...state, casesToTrain: [...state.casesToTrain, action.caseId] };
+    }
+    case ActionType.SelectCases: {
+      return { ...state, casesToTrain: action.caseIds };
+    }
+    case ActionType.RemoveCase: {
+      return {
+        ...state,
+        casesToTrain: state.casesToTrain.filter(
+          caseId => caseId !== action.caseId
+        )
+      };
+    }
+    default:
+      return state;
+  }
+};
+
+/*
+|------------------------------------------------------------------------------
+| Cases Modal
+|------------------------------------------------------------------------------
+*/
+export interface Props {
+  allCases: Alg[];
+  casesToTrain: AlgId[];
+  onCloseModal: (casesToTrain: AlgId[]) => void;
+}
+
+const CasesModal: React.FC<Props> = props => {
+  const [state, dispatch] = React.useReducer(reducer, {
+    casesToTrain: props.casesToTrain
+  });
+
+  return (
+    <div className="absolute top-0 left-0 bottom-0 right-0 h-screen bg-white flex flex-col justify-between">
+      <div className="p-4 shadow-md relative z-10 box-border">
+        <h2 className="text-2xl font-mono underline">Select cases to train</h2>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 overflow-scroll flex-shrink flex-grow p-2 box-border">
+        {props.allCases.map(_case => {
+          const isIncluded = state.casesToTrain.includes(_case.id);
+
+          return (
+            <label
+              key={_case.id}
+              className={classNames(
+                "flex items-center justify-between p-2 border-2 rounded-lg",
+                {
+                  "border-gray-300": !isIncluded,
+                  "border-green-500": isIncluded
+                }
+              )}
+            >
+              <img
+                className="block w-16"
+                src={`${process.env.PUBLIC_URL}/assets/fl2cases2/${_case.id}.png`}
+              />
+              <input
+                type="checkbox"
+                checked={isIncluded}
+                onChange={() => {
+                  isIncluded
+                    ? dispatch({
+                        type: ActionType.RemoveCase,
+                        caseId: _case.id
+                      })
+                    : dispatch({
+                        type: ActionType.SelectCase,
+                        caseId: _case.id
+                      });
+                }}
+              />
+            </label>
+          );
+        })}
+      </div>
+      <div className="p-4 shadow-md relative z-10 box-border">
+        <button
+          className="border-blue-500 border-2 p-2 bg-blue-600 text-white rounded-full"
+          onClick={() => {
+            dispatch({
+              type: ActionType.SelectCases,
+              caseIds: props.allCases.map(_case => _case.id)
+            });
+          }}
+        >
+          Select all
+        </button>
+        <button
+          className="border-blue-500 border-2 p-2 bg-blue-600 text-white rounded-full"
+          onClick={() => props.onCloseModal(state.casesToTrain)}
+        >
+          Select cases
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default CasesModal;
