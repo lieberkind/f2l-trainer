@@ -1,58 +1,10 @@
 import React from "react";
 import classNames from "classnames";
 
+import * as Timer from "./Timer";
 import algs, { Alg, AlgId, algSets } from "./algs";
 import * as Util from "./util";
 import CasesModal, { Props as CasesModalInputProps } from "./CasesModal";
-
-/*
-|------------------------------------------------------------------------------
-| Timer
-|------------------------------------------------------------------------------
-*/
-enum TimerStatus {
-  Initial,
-  Ready,
-  Running,
-  Stopped
-}
-
-interface Timer {
-  status: TimerStatus;
-  timer: number;
-}
-
-const initialTimer = (): Timer => {
-  return { status: TimerStatus.Initial, timer: 0 };
-};
-
-const stopTimer = (timer: Timer): Timer => {
-  return { ...timer, status: TimerStatus.Stopped };
-};
-
-const startTimer = (timer: Timer): Timer => {
-  return { ...timer, status: TimerStatus.Running };
-};
-
-const readyTimer = (timer: Timer): Timer => {
-  return { ...timer, status: TimerStatus.Ready, timer: 0 };
-};
-
-const increaseTimer = (timer: Timer): Timer => {
-  return { status: TimerStatus.Running, timer: timer.timer + 1 };
-};
-
-const isInitial = (timer: Timer): boolean => {
-  return timer.status === TimerStatus.Initial;
-};
-
-const isRunning = (timer: Timer): boolean => {
-  return timer.status === TimerStatus.Running;
-};
-
-const isReady = (timer: Timer): boolean => {
-  return timer.status === TimerStatus.Ready;
-};
 
 const format = (time: number): string => {
   const seconds = Math.floor(time / 100);
@@ -63,16 +15,18 @@ const format = (time: number): string => {
   return `${seconds}.${paddedDeciSeconds}`;
 };
 
-const Timer: React.FC<{ timer: Timer }> = props => {
+const TimerComponent: React.FC<{ timer: Timer.Timer }> = props => {
   return (
     <div
       className={classNames([
         "text-4xl",
         "font-mono",
-        { "text-green-700": isReady(props.timer) }
+        { "text-green-700": Timer.isReady(props.timer) }
       ])}
     >
-      {isInitial(props.timer) ? "Ready" : format(props.timer.timer)}
+      {Timer.isInitial(props.timer)
+        ? "Ready"
+        : format(Timer.getTime(props.timer))}
     </div>
   );
 };
@@ -200,7 +154,7 @@ const Settings: React.FC<{
 interface State {
   algsToTrain: AlgId[];
   currentAlg: Alg;
-  timer: Timer;
+  timer: Timer.Timer;
   showSolutions: boolean;
   times: Time[];
   showCasesModal: boolean;
@@ -216,7 +170,7 @@ const initialAlg =
 const initialState: State = {
   algsToTrain: algSets[4].algIds,
   currentAlg: initialAlg,
-  timer: initialTimer(),
+  timer: Timer.initial(),
   showSolutions: true,
   times: [],
   showCasesModal: false
@@ -256,15 +210,23 @@ type Action =
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case ActionType.StartTimer: {
+      if (!Timer.isReady(state.timer)) {
+        return state;
+      }
+
       return {
         ...state,
-        timer: startTimer(state.timer)
+        timer: Timer.start(state.timer)
       };
     }
     case ActionType.StopTimer: {
+      if (!Timer.isRunning(state.timer)) {
+        return state;
+      }
+
       const time: Time = {
         recordedAt: action.stoppedAt,
-        timeInDeciSeconds: state.timer.timer,
+        timeInDeciSeconds: state.timer.time,
         alg: state.currentAlg
       };
 
@@ -275,16 +237,24 @@ const reducer = (state: State, action: Action): State => {
 
       return {
         ...state,
-        timer: stopTimer(state.timer),
+        timer: Timer.stop(state.timer),
         currentAlg: nextAlg,
         times: [...state.times, time]
       };
     }
     case ActionType.IncreaseTimer: {
-      return { ...state, timer: increaseTimer(state.timer) };
+      if (!Timer.isRunning(state.timer)) {
+        return state;
+      }
+
+      return { ...state, timer: Timer.increase(state.timer) };
     }
     case ActionType.ReadyTimer: {
-      return { ...state, timer: readyTimer(state.timer) };
+      if (!Timer.isStopped(state.timer) && !Timer.isInitial(state.timer)) {
+        return state;
+      }
+
+      return { ...state, timer: Timer.getReady(state.timer) };
     }
     case ActionType.ToggleShowSolutions: {
       return { ...state, showSolutions: !state.showSolutions };
@@ -320,8 +290,8 @@ const reducer = (state: State, action: Action): State => {
 function App() {
   const [state, dispatch] = React.useReducer(reducer, initialState);
 
-  const isTimerRunning = isRunning(state.timer);
-  const isTimerReady = isReady(state.timer);
+  const isTimerRunning = Timer.isRunning(state.timer);
+  const isTimerReady = Timer.isReady(state.timer);
 
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -371,7 +341,7 @@ function App() {
               alg={state.currentAlg}
               showSolutions={state.showSolutions}
             />
-            <Timer timer={state.timer} />
+            <TimerComponent timer={state.timer} />
           </div>
           <Settings showSolutions={state.showSolutions} dispatch={dispatch} />
         </div>
