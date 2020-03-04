@@ -278,6 +278,22 @@ function App() {
   const isTimerReady = Timer.isReady(state.timer);
 
   React.useEffect(() => {
+    const promises = algs.map(alg => {
+      const promise = new Promise((resolve, reject) => {
+        let img = new Image();
+        img.src = `${process.env.PUBLIC_URL}/assets/fl2cases2/${alg.id}.png`;
+        img.onload = () => {
+          resolve();
+        };
+      });
+    });
+
+    Promise.all(promises).then(() => {
+      console.log("all images loaded ");
+    });
+  }, [algs]);
+
+  React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (isTimerRunning) {
         e.preventDefault();
