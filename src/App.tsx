@@ -4,16 +4,7 @@ import classNames from "classnames";
 import * as Timer from "./Timer";
 import algs, { Alg, AlgId, algSets } from "./algs";
 import * as Util from "./util";
-import CasesModal, { Props as CasesModalInputProps } from "./CasesModal";
-
-const format = (time: number): string => {
-  const seconds = Math.floor(time / 100);
-  const deciSeconds = time % 100;
-  const paddedDeciSeconds =
-    deciSeconds < 10 ? `0${Math.round(deciSeconds)}` : Math.round(deciSeconds);
-
-  return `${seconds}.${paddedDeciSeconds}`;
-};
+import CasesModal from "./CasesModal";
 
 const TimerComponent: React.FC<{ timer: Timer.Timer }> = props => {
   return (
@@ -26,7 +17,7 @@ const TimerComponent: React.FC<{ timer: Timer.Timer }> = props => {
     >
       {Timer.isInitial(props.timer)
         ? "Ready"
-        : format(Timer.getTime(props.timer))}
+        : Util.format(Timer.getTime(props.timer))}
     </div>
   );
 };
@@ -97,13 +88,13 @@ const Times: React.FC<{ times: Time[] }> = props => {
   return (
     <div className="flex flex-col">
       <h3 className="text-2xl">
-        Times <span className="text-gray-500">avg: {format(avarage)}</span>
+        Times <span className="text-gray-500">avg: {Util.format(avarage)}</span>
       </h3>
       <div className="flex-grow flex-shrink overflow-y-scroll">
         {props.times.map(time => {
           return (
             <div className="inline-block text px-2 py-1 mb-1 bg-red-200 rounded-sm mr-1 text-sm">
-              {format(time.timeInDeciSeconds)}
+              {Util.format(time.timeInDeciSeconds)}
             </div>
           );
         })}
@@ -160,16 +151,9 @@ interface State {
   showCasesModal: boolean;
 }
 
-const initialAlgsToTrain = algs.filter(alg =>
-  algSets[4].algIds.includes(alg.id)
-);
-
-const initialAlg =
-  initialAlgsToTrain[Util.getRandomInt(initialAlgsToTrain.length)];
-
 const initialState: State = {
-  algsToTrain: algSets[4].algIds,
-  currentAlg: initialAlg,
+  algsToTrain: algs.map(alg => alg.id),
+  currentAlg: Util.getRandomElement(algs),
   timer: Timer.initial(),
   showSolutions: true,
   times: [],
@@ -295,13 +279,15 @@ function App() {
 
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (isTimerRunning) {
+        e.preventDefault();
+        dispatch({ type: ActionType.StopTimer, stoppedAt: Date.now() });
+        return;
+      }
+
       if (e.keyCode === 32) {
         e.preventDefault();
-        if (isTimerRunning) {
-          dispatch({ type: ActionType.StopTimer, stoppedAt: Date.now() });
-        } else {
-          dispatch({ type: ActionType.ReadyTimer });
-        }
+        dispatch({ type: ActionType.ReadyTimer });
       }
     };
 
