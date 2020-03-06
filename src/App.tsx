@@ -53,14 +53,6 @@ const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean }> = React.memo(
             className="block"
             src={`${process.env.PUBLIC_URL}/assets/fl2cases2/${props.alg.id}.png`}
           />
-          {props.showSolutions ? (
-            <ul className="ml-10">
-              <li className="uppercase text-gray-600">Solutions:</li>
-              {props.alg.solutions.map(solution => {
-                return <li className="font-mono">{solution}</li>;
-              })}
-            </ul>
-          ) : null}
         </div>
       </>
     );
@@ -78,30 +70,55 @@ interface Time {
   alg: Alg;
 }
 
-const Times: React.FC<{ times: Time[] }> = props => {
+const Times: React.FC<{
+  times: Time[];
+  dispatch: React.Dispatch<Action>;
+}> = React.memo(props => {
   const sumOfTimes = props.times
     .map(time => time.timeInDeciSeconds)
     .reduce(sum, 0);
   const avarage =
     props.times.length === 0 ? 0 : sumOfTimes / props.times.length;
 
+  const times = [...props.times].reverse();
+
   return (
-    <div className="flex flex-col">
-      <h3 className="text-2xl">
-        Times <span className="text-gray-500">avg: {Util.format(avarage)}</span>
-      </h3>
-      <div className="flex-grow flex-shrink overflow-y-scroll">
-        {props.times.map(time => {
-          return (
-            <div className="inline-block text px-2 py-1 mb-1 bg-red-200 rounded-sm mr-1 text-sm">
-              {Util.format(time.timeInDeciSeconds)}
-            </div>
-          );
-        })}
-      </div>
+    <div className="max-h-full overflow-y-scroll relative">
+      <table className="w-full">
+        <thead className="sticky top-0">
+          <tr>
+            <th className="pl-2 border-b-2 border-teal-300 text-left border-teal-300 sticky top-0 bg-teal-800 text-teal-300">
+              Time (avg: {Util.format(avarage)})
+            </th>
+            <th className="sticky top-0 border-b-2 border-teal-300 bg-teal-800"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {times.map(time => {
+            return (
+              <tr key={time.recordedAt} className="relative">
+                <td className="pl-2 border-b-2 border-teal-300">
+                  {Util.format(time.timeInDeciSeconds)}
+                </td>
+                <td
+                  className="border-2 hover:bg-red-800 hover:text-red-300 hover:cursor-pointer border-teal-300 bg-teal-800 text-center text-teal-300"
+                  onClick={() =>
+                    props.dispatch({
+                      type: ActionType.DeleteTime,
+                      recordedAt: time.recordedAt
+                    })
+                  }
+                >
+                  x
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
-};
+});
 
 const sum = (a: number, b: number) => a + b;
 
@@ -120,15 +137,18 @@ const Settings: React.FC<{
   const showCasesModal = () =>
     props.dispatch({ type: ActionType.ShowCasesModal });
   return (
-    <div className="flex">
+    <div className="border-b-2 border-bottom border-teal-300 p-2 ">
+      <label className="flex items-center mb-2">
+        <input
+          className="block mr-2"
+          type="checkbox"
+          checked={props.showSolutions}
+          onChange={toggleShowSolutions}
+        />
+        Show solutions
+      </label>
       <button
-        className="border-blue-500 border-2 p-2 bg-blue-600 text-white rounded-full"
-        onClick={toggleShowSolutions}
-      >
-        {props.showSolutions ? "Hide solutions" : "Show solutions"}
-      </button>
-      <button
-        className="border-blue-500 border-2 p-2 bg-blue-600 text-white rounded-full"
+        className="border-teal-300 block w-full border-2 p-1 bg-teal-800 text-teal-300 rounded-md"
         onClick={showCasesModal}
       >
         Select cases...
@@ -173,7 +193,8 @@ enum ActionType {
   ToggleShowSolutions,
   SetAlgsToTrain,
   ShowCasesModal,
-  HideCasesModal
+  HideCasesModal,
+  DeleteTime
 }
 
 type Action =
@@ -184,7 +205,8 @@ type Action =
   | { type: ActionType.ToggleShowSolutions }
   | { type: ActionType.SetAlgsToTrain; algsToTrain: AlgId[] }
   | { type: ActionType.ShowCasesModal }
-  | { type: ActionType.HideCasesModal };
+  | { type: ActionType.HideCasesModal }
+  | { type: ActionType.DeleteTime; recordedAt: number };
 
 /*
 |------------------------------------------------------------------------------
@@ -260,6 +282,12 @@ const reducer = (state: State, action: Action): State => {
     }
     case ActionType.HideCasesModal: {
       return { ...state, showCasesModal: false };
+    }
+    case ActionType.DeleteTime: {
+      return {
+        ...state,
+        times: state.times.filter(time => time.recordedAt !== action.recordedAt)
+      };
     }
     default:
       return state;
@@ -337,18 +365,29 @@ function App() {
   return (
     <div>
       <div className="h-screen w-full flex">
-        <div className="mx-auto flex py-2 flex-col items-center justify-between">
-          <div className="flex flex-col items-center">
+        <div className="h-screen border-r-2 border-teal-300 w-64 overflow-hidden">
+          <Settings showSolutions={state.showSolutions} dispatch={dispatch} />
+          <Times times={state.times} dispatch={dispatch} />
+        </div>
+        <div className="flex pt-2 flex-col items-center justify-between flex-grow">
+          <div className="flex flex-col items-center flex-grow w-full">
             <Algorithm
               alg={state.currentAlg}
               showSolutions={state.showSolutions}
             />
             <TimerComponent timer={state.timer} />
+
+            {state.showSolutions ? (
+              <div className="w-full border-t-2 border-teal-300 p-2 bg-teal-800 flex-grow text-white">
+                <ul className="">
+                  <li className="text-teal-300 font-bold">Solutions:</li>
+                  {state.currentAlg.solutions.map(solution => {
+                    return <li className="font-mono">{solution}</li>;
+                  })}
+                </ul>
+              </div>
+            ) : null}
           </div>
-          <Settings showSolutions={state.showSolutions} dispatch={dispatch} />
-        </div>
-        <div className="h-screen border-l-2 border-gray-300 p-2 w-64">
-          <Times times={state.times} />
         </div>
       </div>
       {state.showCasesModal ? (

@@ -72,13 +72,9 @@ const CasesModal: React.FC<Props> = props => {
 
   return (
     <div className="absolute top-0 left-0 bottom-0 right-0 h-screen bg-white flex flex-col justify-between">
-      <div className="p-4 shadow-md relative z-10 box-border">
-        <h2 className="text-2xl font-mono underline">Select cases to train</h2>
-      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 overflow-scroll flex-shrink flex-grow p-2 box-border">
         {props.allCases.map(_case => {
           const isIncluded = state.casesToTrain.includes(_case.id);
-
           return (
             <label
               key={_case.id}
@@ -113,9 +109,9 @@ const CasesModal: React.FC<Props> = props => {
           );
         })}
       </div>
-      <div className="p-4 shadow-md relative z-10 box-border">
+      <div className="p-4 shadow-md relative z-10 box-border border-t-2 border-teal-300 flex justify-between">
         <button
-          className="border-blue-500 border-2 p-2 bg-blue-600 text-white rounded-full"
+          className="border-teal-300 border-2 p-1 bg-teal-800 text-teal-300 rounded-md w-2/12"
           onClick={() => {
             dispatch({
               type: ActionType.SelectCases,
@@ -126,7 +122,7 @@ const CasesModal: React.FC<Props> = props => {
           Select all
         </button>
         <button
-          className="border-blue-500 border-2 p-2 bg-blue-600 text-white rounded-full"
+          className="border-teal-300 border-2 p-1 bg-teal-800 text-teal-300 w-3/12 rounded-md"
           onClick={() => props.onCloseModal(state.casesToTrain)}
         >
           Select cases
