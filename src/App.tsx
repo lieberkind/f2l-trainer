@@ -10,7 +10,7 @@ const TimerComponent: React.FC<{ timer: Timer.Timer }> = props => {
   return (
     <div
       className={classNames([
-        "text-4xl",
+        "text-6xl",
         "font-mono",
         { "text-green-700": Timer.isReady(props.timer) }
       ])}
@@ -21,6 +21,18 @@ const TimerComponent: React.FC<{ timer: Timer.Timer }> = props => {
     </div>
   );
 };
+
+/*
+|------------------------------------------------------------------------------
+| Scramble
+|------------------------------------------------------------------------------
+*/
+
+/*
+|------------------------------------------------------------------------------
+| Scramble
+|------------------------------------------------------------------------------
+*/
 
 /*
 |------------------------------------------------------------------------------
@@ -335,8 +347,48 @@ function App() {
   }, [isTimerRunning]);
 
   return (
-    <div>
-      <div className="h-screen w-full flex">
+    <div className="app-background h-screen w-full pt-8 border-t-8 border-green-600">
+      <h2 className="m-auto w-2/3 text-4xl font-mono text-white text-center mb-4">
+        {state.currentAlg.scramble}
+      </h2>
+      <div className="flex items-start justify-center w-4/5 mx-auto">
+        <div className="shadow-md rounded-lg bg-white w-8/12 p-4 flex flex-col items-center mr-12">
+          <div className="flex items-start">
+            <img
+              className="mb-4"
+              src={`${process.env.PUBLIC_URL}/assets/fl2cases2/${state.currentAlg.id}.png`}
+            />
+          </div>
+          <TimerComponent timer={state.timer} />
+        </div>
+        <div className="w-4/12">
+          <div className="shadow-md rounded-lg bg-white p-4 mb-2">
+            {state.showSolutions ? (
+              <ul className="text-blue-1000 rounded">
+                <li className="uppercase mb-2 underline">Solutions:</li>
+                {state.currentAlg.solutions.map(solution => {
+                  return (
+                    <li className="font-mono mb-2 last:mb-0">{solution}</li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </div>
+          <div className="shadow-md rounded-lg bg-white p-4">
+            {state.showSolutions ? (
+              <ul className="text-blue-1000 rounded">
+                <li className="uppercase mb-2 underline">Solutions:</li>
+                {state.currentAlg.solutions.map(solution => {
+                  return (
+                    <li className="font-mono mb-2 last:mb-0">{solution}</li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </div>
+        </div>
+      </div>
+      {/* <div className="h-screen w-full flex">
         <div className="mx-auto flex py-2 flex-col items-center justify-between">
           <div className="flex flex-col items-center">
             <Algorithm
@@ -350,8 +402,8 @@ function App() {
         <div className="h-screen border-l-2 border-gray-300 p-2 w-64">
           <Times times={state.times} />
         </div>
-      </div>
-      {state.showCasesModal ? (
+      </div> */}
+      {/* {state.showCasesModal ? (
         <CasesModal
           allCases={algs}
           casesToTrain={state.algsToTrain}
@@ -360,7 +412,7 @@ function App() {
             dispatch({ type: ActionType.SetAlgsToTrain, algsToTrain });
           }}
         ></CasesModal>
-      ) : null}
+      ) : null} */}
     </div>
   );
 }
