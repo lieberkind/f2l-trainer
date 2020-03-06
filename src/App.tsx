@@ -10,6 +10,7 @@ const TimerComponent: React.FC<{ timer: Timer.Timer }> = props => {
   return (
     <div
       className={classNames([
+        "mb-4",
         "text-4xl",
         "font-mono",
         { "text-green-700": Timer.isReady(props.timer) }
@@ -387,6 +388,16 @@ function App() {
                 </ul>
               </div>
             ) : null}
+            <div className="bg-teal-300 text-teal-800 w-full pl-2">
+              All cases and solutions are based on{" "}
+              <a
+                className="underline"
+                target="_blank"
+                href="https://bit.ly/bestf2l"
+              >
+                J Perm's best F2L sheet
+              </a>
+            </div>
           </div>
         </div>
       </div>
