@@ -343,6 +343,52 @@ const algs: Alg[] = [
     id: 41,
     scramble: `R U' R' r U' r' U2 r U r'`,
     solutions: [`(r U' r') U2 (r U r') (R U R')`, `R U' R2' U' R y (L' U' L) *`]
+  },
+  // Section 2A
+  {
+    id: 42,
+    scramble: `R U R2 U' R U`,
+    solutions: [`U' R' U R2 U' R'`, `y U' (R U' R') U2 (L' U L)`]
+  },
+  {
+    id: 43,
+    scramble: `R U R' U2 L' U' L U'`,
+    solutions: [`U (L' U L) U2 (R U' R')`, `y U L U' L2 U L`]
+  },
+  {
+    id: 44,
+    scramble: `L2 u L2 u' L2 U2`,
+    solutions: [
+      `U2 L2 u L2 u' L2`,
+      `(U R U' R')2(L U2 L')`,
+      `y U2 R2 u' R2 u R2`,
+      `y(U' L' U L)2(R' U2 R)`
+    ]
+  },
+  {
+    id: 45,
+    scramble: `F U2 R U R2 F' R y'`,
+    solutions: [
+      `U (R' U R U' R' U' R) y (L' U L)`,
+      `U2 (R' U R U' R' U R) y (L' U L)`,
+      `y R' F R2 U' R' U2 F'`,
+      `y2 U2 (L F' L' F) (L U L')`
+    ]
+  },
+  {
+    id: 46,
+    scramble: `F' U2 L' U' L2 F L'`,
+    solutions: [
+      `L F' L2 U L U2 F`,
+      `y' U2 (R' F R F') (R' U' R)`,
+      `y U' L U' L' U L U L' y' R U' R'`,
+      `y U2 L U' L' U L U' L' y' R U' R'`
+    ]
+  },
+  {
+    id: 47,
+    scramble: `L F' U' F L'`,
+    solutions: [`L F' U F L'`, `y R' F U' F' R`, `y2 R u R' U R u' R'`]
   }
 ];
 
