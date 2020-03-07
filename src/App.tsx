@@ -130,10 +130,14 @@ const sum = (a: number, b: number) => a + b;
 */
 const Settings: React.FC<{
   showSolutions: boolean;
+  goToNextCaseAfterSolve: boolean;
   dispatch: React.Dispatch<Action>;
 }> = React.memo(props => {
   const toggleShowSolutions = () =>
     props.dispatch({ type: ActionType.ToggleShowSolutions });
+
+  const toggleGoToNextCaseAfterSolve = () =>
+    props.dispatch({ type: ActionType.ToggleGoToNextCaseAfterSolve });
 
   const showCasesModal = () =>
     props.dispatch({ type: ActionType.ShowCasesModal });
@@ -147,6 +151,15 @@ const Settings: React.FC<{
           onChange={toggleShowSolutions}
         />
         Show solutions
+      </label>
+      <label className="flex items-center mb-2">
+        <input
+          className="block mr-2"
+          type="checkbox"
+          checked={props.goToNextCaseAfterSolve}
+          onChange={toggleGoToNextCaseAfterSolve}
+        />
+        Go to next case after solve
       </label>
       <button
         className="border-teal-300 block w-full border-2 p-1 bg-teal-800 text-teal-300 rounded-md"
@@ -168,6 +181,7 @@ interface State {
   currentAlg: Alg;
   timer: Timer.Timer;
   showSolutions: boolean;
+  goToNextCaseAfterSolve: boolean;
   times: Time[];
   showCasesModal: boolean;
 }
@@ -177,6 +191,7 @@ const initialState: State = {
   currentAlg: Util.getRandomElement(algs),
   timer: Timer.initial(),
   showSolutions: true,
+  goToNextCaseAfterSolve: true,
   times: [],
   showCasesModal: false
 };
@@ -192,10 +207,12 @@ enum ActionType {
   IncreaseTimer,
   ReadyTimer,
   ToggleShowSolutions,
+  ToggleGoToNextCaseAfterSolve,
   SetAlgsToTrain,
   ShowCasesModal,
   HideCasesModal,
-  DeleteTime
+  DeleteTime,
+  GoToNextCase
 }
 
 type Action =
@@ -204,10 +221,12 @@ type Action =
   | { type: ActionType.IncreaseTimer }
   | { type: ActionType.ReadyTimer }
   | { type: ActionType.ToggleShowSolutions }
+  | { type: ActionType.ToggleGoToNextCaseAfterSolve }
   | { type: ActionType.SetAlgsToTrain; algsToTrain: AlgId[] }
   | { type: ActionType.ShowCasesModal }
   | { type: ActionType.HideCasesModal }
-  | { type: ActionType.DeleteTime; recordedAt: number };
+  | { type: ActionType.DeleteTime; recordedAt: number }
+  | { type: ActionType.GoToNextCase };
 
 /*
 |------------------------------------------------------------------------------
@@ -237,8 +256,9 @@ const reducer = (state: State, action: Action): State => {
         alg: state.currentAlg
       };
 
-      const nextAlgId =
-        state.algsToTrain[Util.getRandomInt(state.algsToTrain.length)];
+      const nextAlgId = state.goToNextCaseAfterSolve
+        ? Util.getRandomElement(state.algsToTrain)
+        : state.currentAlg.id;
 
       const nextAlg = algs.find(alg => alg.id === nextAlgId) ?? algs[0];
 
@@ -266,10 +286,23 @@ const reducer = (state: State, action: Action): State => {
     case ActionType.ToggleShowSolutions: {
       return { ...state, showSolutions: !state.showSolutions };
     }
-    case ActionType.SetAlgsToTrain: {
-      const nextAlgId =
-        action.algsToTrain[Util.getRandomInt(action.algsToTrain.length)];
+    case ActionType.ToggleGoToNextCaseAfterSolve: {
+      return {
+        ...state,
+        goToNextCaseAfterSolve: !state.goToNextCaseAfterSolve
+      };
+    }
+    case ActionType.GoToNextCase: {
+      const nextAlgId = Util.getRandomElement(state.algsToTrain);
+      const nextAlg = algs.find(alg => alg.id === nextAlgId) ?? algs[0];
 
+      return {
+        ...state,
+        currentAlg: nextAlg
+      };
+    }
+    case ActionType.SetAlgsToTrain: {
+      const nextAlgId = Util.getRandomElement(action.algsToTrain);
       const nextAlg = algs.find(alg => alg.id === nextAlgId) ?? algs[0];
 
       return {
@@ -367,7 +400,11 @@ function App() {
     <div>
       <div className="h-screen w-full flex">
         <div className="h-screen border-r-2 border-teal-300 w-64 overflow-hidden">
-          <Settings showSolutions={state.showSolutions} dispatch={dispatch} />
+          <Settings
+            showSolutions={state.showSolutions}
+            goToNextCaseAfterSolve={state.goToNextCaseAfterSolve}
+            dispatch={dispatch}
+          />
           <Times times={state.times} dispatch={dispatch} />
         </div>
         <div className="flex pt-2 flex-col items-center justify-between flex-grow">
@@ -377,6 +414,15 @@ function App() {
               showSolutions={state.showSolutions}
             />
             <TimerComponent timer={state.timer} />
+
+            {!state.goToNextCaseAfterSolve ? (
+              <button
+                className="border-teal-300 border-2 p-1 bg-teal-800 text-teal-300 rounded-md mb-4"
+                onClick={() => dispatch({ type: ActionType.GoToNextCase })}
+              >
+                Next case
+              </button>
+            ) : null}
 
             {state.showSolutions ? (
               <div className="w-full border-t-2 border-teal-300 p-2 bg-teal-800 flex-grow text-white">
