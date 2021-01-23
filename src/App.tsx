@@ -6,14 +6,14 @@ import algs, { Alg, AlgId, algSets } from "./algs";
 import * as Util from "./util";
 import CasesModal from "./CasesModal";
 
-const TimerComponent: React.FC<{ timer: Timer.Timer }> = props => {
+const TimerComponent: React.FC<{ timer: Timer.Timer }> = (props) => {
   return (
     <div
       className={classNames([
         "mb-4",
         "text-4xl",
         "font-mono",
-        { "text-green-700": Timer.isReady(props.timer) }
+        { "text-green-700": Timer.isReady(props.timer) },
       ])}
     >
       {Timer.isInitial(props.timer)
@@ -29,7 +29,7 @@ const TimerComponent: React.FC<{ timer: Timer.Timer }> = props => {
 |------------------------------------------------------------------------------
 */
 const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean }> = React.memo(
-  props => {
+  (props) => {
     const moves = props.alg.scramble.split(" ");
     return (
       <>
@@ -40,7 +40,7 @@ const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean }> = React.memo(
                 className={classNames([
                   "text-3xl",
                   "font-mono",
-                  { "ml-6": idx !== 0 }
+                  { "ml-6": idx !== 0 },
                 ])}
                 key={idx}
               >
@@ -74,9 +74,9 @@ interface Time {
 const Times: React.FC<{
   times: Time[];
   dispatch: React.Dispatch<Action>;
-}> = React.memo(props => {
+}> = React.memo((props) => {
   const sumOfTimes = props.times
-    .map(time => time.timeInDeciSeconds)
+    .map((time) => time.timeInDeciSeconds)
     .reduce(sum, 0);
   const avarage =
     props.times.length === 0 ? 0 : sumOfTimes / props.times.length;
@@ -95,7 +95,7 @@ const Times: React.FC<{
           </tr>
         </thead>
         <tbody>
-          {times.map(time => {
+          {times.map((time) => {
             return (
               <tr key={time.recordedAt} className="relative">
                 <td className="pl-2 border-b-2 border-teal-300">
@@ -106,7 +106,7 @@ const Times: React.FC<{
                   onClick={() =>
                     props.dispatch({
                       type: ActionType.DeleteTime,
-                      recordedAt: time.recordedAt
+                      recordedAt: time.recordedAt,
                     })
                   }
                 >
@@ -132,7 +132,7 @@ const Settings: React.FC<{
   showSolutions: boolean;
   goToNextCaseAfterSolve: boolean;
   dispatch: React.Dispatch<Action>;
-}> = React.memo(props => {
+}> = React.memo((props) => {
   const toggleShowSolutions = () =>
     props.dispatch({ type: ActionType.ToggleShowSolutions });
 
@@ -187,13 +187,13 @@ interface State {
 }
 
 const initialState: State = {
-  algsToTrain: algs.map(alg => alg.id),
+  algsToTrain: algs.map((alg) => alg.id),
   currentAlg: Util.getRandomElement(algs),
   timer: Timer.initial(),
   showSolutions: true,
   goToNextCaseAfterSolve: true,
   times: [],
-  showCasesModal: false
+  showCasesModal: false,
 };
 
 /*
@@ -212,7 +212,7 @@ enum ActionType {
   ShowCasesModal,
   HideCasesModal,
   DeleteTime,
-  GoToNextCase
+  GoToNextCase,
 }
 
 type Action =
@@ -242,7 +242,7 @@ const reducer = (state: State, action: Action): State => {
 
       return {
         ...state,
-        timer: Timer.start(state.timer)
+        timer: Timer.start(state.timer),
       };
     }
     case ActionType.StopTimer: {
@@ -253,20 +253,20 @@ const reducer = (state: State, action: Action): State => {
       const time: Time = {
         recordedAt: action.stoppedAt,
         timeInDeciSeconds: state.timer.time,
-        alg: state.currentAlg
+        alg: state.currentAlg,
       };
 
       const nextAlgId = state.goToNextCaseAfterSolve
         ? Util.getRandomElement(state.algsToTrain)
         : state.currentAlg.id;
 
-      const nextAlg = algs.find(alg => alg.id === nextAlgId) ?? algs[0];
+      const nextAlg = algs.find((alg) => alg.id === nextAlgId) ?? algs[0];
 
       return {
         ...state,
         timer: Timer.stop(state.timer),
         currentAlg: nextAlg,
-        times: [...state.times, time]
+        times: [...state.times, time],
       };
     }
     case ActionType.IncreaseTimer: {
@@ -289,26 +289,26 @@ const reducer = (state: State, action: Action): State => {
     case ActionType.ToggleGoToNextCaseAfterSolve: {
       return {
         ...state,
-        goToNextCaseAfterSolve: !state.goToNextCaseAfterSolve
+        goToNextCaseAfterSolve: !state.goToNextCaseAfterSolve,
       };
     }
     case ActionType.GoToNextCase: {
       const nextAlgId = Util.getRandomElement(state.algsToTrain);
-      const nextAlg = algs.find(alg => alg.id === nextAlgId) ?? algs[0];
-
-      return {
-        ...state,
-        currentAlg: nextAlg
-      };
-    }
-    case ActionType.SetAlgsToTrain: {
-      const nextAlgId = Util.getRandomElement(action.algsToTrain);
-      const nextAlg = algs.find(alg => alg.id === nextAlgId) ?? algs[0];
+      const nextAlg = algs.find((alg) => alg.id === nextAlgId) ?? algs[0];
 
       return {
         ...state,
         currentAlg: nextAlg,
-        algsToTrain: action.algsToTrain
+      };
+    }
+    case ActionType.SetAlgsToTrain: {
+      const nextAlgId = Util.getRandomElement(action.algsToTrain);
+      const nextAlg = algs.find((alg) => alg.id === nextAlgId) ?? algs[0];
+
+      return {
+        ...state,
+        currentAlg: nextAlg,
+        algsToTrain: action.algsToTrain,
       };
     }
     case ActionType.ShowCasesModal: {
@@ -320,7 +320,9 @@ const reducer = (state: State, action: Action): State => {
     case ActionType.DeleteTime: {
       return {
         ...state,
-        times: state.times.filter(time => time.recordedAt !== action.recordedAt)
+        times: state.times.filter(
+          (time) => time.recordedAt !== action.recordedAt
+        ),
       };
     }
     default:
@@ -340,20 +342,19 @@ function App() {
   const isTimerReady = Timer.isReady(state.timer);
 
   React.useEffect(() => {
-    const promises = algs.map(alg => {
-      const promise = new Promise((resolve, reject) => {
-        let img = new Image();
-        img.src = `${process.env.PUBLIC_URL}/assets/fl2cases2/${alg.id}.png`;
-        img.onload = () => {
-          resolve();
-        };
+    const promises = algs.map((alg) => {
+      console.log(`Fetching alg: ${alg.id}`);
+      return fetch(
+        `${process.env.PUBLIC_URL}/assets/fl2cases2/${alg.id}.png`
+      ).then(() => {
+        console.log(`Alg loaded: ${alg.id}`);
       });
     });
 
     Promise.all(promises).then(() => {
-      console.log("all images loaded ");
+      console.log("All algs loaded!");
     });
-  }, [algs]);
+  }, []);
 
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -428,7 +429,7 @@ function App() {
               <div className="w-full border-t-2 border-teal-300 p-2 bg-teal-800 flex-grow text-white">
                 <ul className="">
                   <li className="text-teal-300 font-bold">Solutions:</li>
-                  {state.currentAlg.solutions.map(solution => {
+                  {state.currentAlg.solutions.map((solution) => {
                     return <li className="font-mono">{solution}</li>;
                   })}
                 </ul>
@@ -451,7 +452,7 @@ function App() {
         <CasesModal
           allCases={algs}
           casesToTrain={state.algsToTrain}
-          onCloseModal={algsToTrain => {
+          onCloseModal={(algsToTrain) => {
             dispatch({ type: ActionType.HideCasesModal });
             dispatch({ type: ActionType.SetAlgsToTrain, algsToTrain });
           }}
