@@ -21,12 +21,14 @@ enum ActionType {
   SelectCase,
   SelectCases,
   RemoveCase,
+  RemoveAllCases,
 }
 
 type Action =
   | { type: ActionType.SelectCase; caseId: AlgId }
   | { type: ActionType.SelectCases; caseIds: AlgId[] }
-  | { type: ActionType.RemoveCase; caseId: AlgId };
+  | { type: ActionType.RemoveCase; caseId: AlgId }
+  | { type: ActionType.RemoveAllCases };
 
 /*
 |------------------------------------------------------------------------------
@@ -47,6 +49,12 @@ const reducer = (state: State, action: Action): State => {
         casesToTrain: state.casesToTrain.filter(
           (caseId) => caseId !== action.caseId
         ),
+      };
+    }
+    case ActionType.RemoveAllCases: {
+      return {
+        ...state,
+        casesToTrain: [],
       };
     }
     default:
@@ -111,17 +119,29 @@ const CasesModal: React.FC<Props> = (props) => {
         })}
       </div>
       <div className="p-4 shadow-md relative z-10 box-border border-t-2 border-teal-300 flex justify-between">
-        <button
-          className="border-teal-300 border-2 p-1 bg-teal-800 text-teal-300 rounded-md w-2/12"
-          onClick={() => {
-            dispatch({
-              type: ActionType.SelectCases,
-              caseIds: props.allCases.map((_case) => _case.id),
-            });
-          }}
-        >
-          Select all
-        </button>
+        <div className="flex justify-between gap-2">
+          <button
+            className="border-teal-300 border-2 p-1 bg-teal-800 text-teal-300 rounded-md w-10/20"
+            onClick={() => {
+              dispatch({
+                type: ActionType.SelectCases,
+                caseIds: props.allCases.map((_case) => _case.id),
+              });
+            }}
+          >
+            Select all
+          </button>
+          <button
+            className="border-teal-300 border-2 p-1 bg-teal-800 text-teal-300 rounded-md w-10/20"
+            onClick={() => {
+              dispatch({
+                type: ActionType.RemoveAllCases,
+              });
+            }}
+          >
+            Deselect all
+          </button>
+        </div>
         <button
           className="border-teal-300 border-2 p-1 bg-teal-800 text-teal-300 w-3/12 rounded-md"
           onClick={() => props.onCloseModal(state.casesToTrain)}
