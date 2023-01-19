@@ -40,6 +40,7 @@ enum ActionType {
   HideCasesModal,
   DeleteTime,
   GoToNextCase,
+  ToggleShowCube,
 }
 
 type Action =
@@ -53,7 +54,8 @@ type Action =
   | { type: ActionType.ShowCasesModal }
   | { type: ActionType.HideCasesModal }
   | { type: ActionType.DeleteTime; recordedAt: number }
-  | { type: ActionType.GoToNextCase };
+  | { type: ActionType.GoToNextCase }
+  | { type: ActionType.ToggleShowCube };
 
 /*
 |------------------------------------------------------------------------------
@@ -144,6 +146,12 @@ const reducer = (state: State, action: Action): State => {
     case ActionType.HideCasesModal: {
       return { ...state, showCasesModal: false };
     }
+    case ActionType.ToggleShowCube: {
+      return {
+        ...state,
+        showCube: !state.showCube,
+      };
+    }
     case ActionType.DeleteTime: {
       return {
         ...state,
@@ -162,7 +170,7 @@ const reducer = (state: State, action: Action): State => {
 | Algorithm
 |------------------------------------------------------------------------------
 */
-const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean }> = React.memo(
+const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean; showCube: boolean }> = React.memo(
   (props) => {
     const moves = props.alg.scramble.split(" ");
     return (
@@ -186,7 +194,7 @@ const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean }> = React.memo(
         <div className="flex items-center mb-10">
           <img
             alt={`Algorithm ${props.alg.id}`}
-            className="block"
+            className={classNames(["block", {"invisible": !props.showCube}])}
             src={`${process.env.PUBLIC_URL}/assets/fl2cases2/${props.alg.id}.png`}
           />
         </div>
@@ -266,6 +274,7 @@ const sum = (a: number, b: number) => a + b;
 const Settings: React.FC<{
   showSolutions: boolean;
   goToNextCaseAfterSolve: boolean;
+  showCube: boolean;
   dispatch: React.Dispatch<Action>;
 }> = React.memo((props) => {
   const toggleShowSolutions = () =>
@@ -276,6 +285,9 @@ const Settings: React.FC<{
 
   const showCasesModal = () =>
     props.dispatch({ type: ActionType.ShowCasesModal });
+
+  const toggleShowCube = () =>
+      props.dispatch({type: ActionType.ToggleShowCube});
   return (
     <div className="border-b-2 border-bottom border-teal-300 p-2 ">
       <label className="flex items-center mb-2">
@@ -286,6 +298,15 @@ const Settings: React.FC<{
           onChange={toggleShowSolutions}
         />
         Show solutions
+      </label>
+      <label className="flex items-center mb-2">
+        <input
+            className="block mr-2"
+            type="checkbox"
+            checked={props.showCube}
+            onChange={toggleShowCube}
+        />
+        Show scrambled Cube
       </label>
       <label className="flex items-center mb-2">
         <input
@@ -319,6 +340,7 @@ interface State {
   goToNextCaseAfterSolve: boolean;
   times: Time[];
   showCasesModal: boolean;
+  showCube: boolean;
 }
 
 const initialState: State = {
@@ -329,6 +351,7 @@ const initialState: State = {
   goToNextCaseAfterSolve: true,
   times: [],
   showCasesModal: false,
+  showCube: true,
 };
 
 /*
@@ -405,6 +428,7 @@ function App() {
           <Settings
             showSolutions={state.showSolutions}
             goToNextCaseAfterSolve={state.goToNextCaseAfterSolve}
+            showCube={state.showCube}
             dispatch={dispatch}
           />
           <Times times={state.times} dispatch={dispatch} />
@@ -414,6 +438,7 @@ function App() {
             <Algorithm
               alg={state.currentAlg}
               showSolutions={state.showSolutions}
+              showCube={state.showCube}
             />
             <TimerComponent timer={state.timer} />
 
