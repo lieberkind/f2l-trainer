@@ -1,5 +1,5 @@
 import React from "react";
-import { cubePNG, Masking } from "sr-visualizer";
+import { cubePNG, Face, Masking } from "sr-visualizer";
 
 export const Cube = ({
   scramble,
@@ -20,6 +20,14 @@ export const Cube = ({
     const refNode = ref.current;
 
     cubePNG(ref.current, {
+      colorScheme: {
+        [Face.U]: "#FEFE00",
+        [Face.R]: "#00D800",
+        [Face.F]: "#EE0000",
+        [Face.D]: "#FFFFFF",
+        [Face.L]: "#0000F2",
+        [Face.B]: "#FFA100",
+      },
       mask: Masking.F2L,
       algorithm: scramble,
       width,
