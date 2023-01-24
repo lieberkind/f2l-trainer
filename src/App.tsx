@@ -5,6 +5,7 @@ import * as Timer from "./Timer";
 import algs, { Alg, AlgId } from "./algs";
 import * as Util from "./util";
 import CasesModal from "./CasesModal";
+import { cubePNG, Masking } from "sr-visualizer";
 
 const TimerComponent: React.FC<{ timer: Timer.Timer }> = (props) => {
   return (
@@ -164,6 +165,28 @@ const reducer = (state: State, action: Action): State => {
 */
 const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean }> = React.memo(
   (props) => {
+    const ref = React.useRef<HTMLDivElement>(null);
+    const scramble = props.alg.scramble;
+
+    React.useEffect(() => {
+      if (!ref.current) {
+        return;
+      }
+
+      const refNode = ref.current;
+
+      cubePNG(ref.current, {
+        mask: Masking.F2L,
+        algorithm: scramble,
+        width: 200,
+        height: 200,
+      });
+
+      return () => {
+        refNode.innerHTML = "";
+      };
+    }, [scramble]);
+
     const moves = props.alg.scramble.split(" ");
     return (
       <>
@@ -183,13 +206,7 @@ const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean }> = React.memo(
             );
           })}
         </div>
-        <div className="flex items-center mb-10">
-          <img
-            alt={`Algorithm ${props.alg.id}`}
-            className="block"
-            src={`${process.env.PUBLIC_URL}/assets/fl2cases2/${props.alg.id}.png`}
-          />
-        </div>
+        <div className="flex items-center mb-10" ref={ref}></div>
       </>
     );
   }
