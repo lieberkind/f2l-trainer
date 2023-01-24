@@ -1,5 +1,5 @@
 import React from "react";
-import { cubePNG, Face, Masking } from "sr-visualizer";
+import { Axis, cubePNG, Face, Masking } from "sr-visualizer";
 
 export const Cube = ({
   scramble,
@@ -32,6 +32,10 @@ export const Cube = ({
       algorithm: scramble,
       width,
       height,
+      viewportRotations: [
+        [Axis.Y, 30],
+        [Axis.X, -20],
+      ],
     });
 
     return () => {
