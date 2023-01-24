@@ -2,6 +2,7 @@ import React from "react";
 import classNames from "classnames";
 
 import { Alg, AlgId } from "./algs";
+import { Cube } from "./cube";
 
 /*
 |------------------------------------------------------------------------------
@@ -94,11 +95,7 @@ const CasesModal: React.FC<Props> = (props) => {
                 }
               )}
             >
-              <img
-                alt={`Case _case.id`}
-                className="block w-16"
-                src={`${process.env.PUBLIC_URL}/assets/fl2cases2/${_case.id}.png`}
-              />
+              <Cube scramble={_case.scramble} width={75} height={75} />
               <input
                 type="checkbox"
                 checked={isIncluded}
