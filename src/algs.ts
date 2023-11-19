@@ -228,7 +228,7 @@ const algs: Alg[] = [
   },
   {
     id: 27,
-    scramble: `(U R U' R')3`,
+    scramble: `(U R U' R') (U R U' R') (U R U' R')`,
     solutions: [`(U R U' R')3`]
   },
   {
