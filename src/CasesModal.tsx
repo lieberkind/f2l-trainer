@@ -1,5 +1,4 @@
 import React from "react";
-import classNames from "classnames";
 
 import { Alg, AlgId } from "./algs";
 import { Cube } from "./cube";

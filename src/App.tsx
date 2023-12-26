@@ -1,5 +1,4 @@
 import React from "react";
-import classNames from "classnames";
 
 import * as Timer from "./Timer";
 import algs, { Alg, AlgId } from "./algs";
