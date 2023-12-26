@@ -1,5 +1,5 @@
 import React from "react";
-import { Axis, cubePNG, Face, Masking } from "sr-visualizer";
+import { Axis, cubeSVG, Face, Masking } from "sr-visualizer";
 
 export const Cube = ({
   scramble,
@@ -19,7 +19,7 @@ export const Cube = ({
 
     const refNode = ref.current;
 
-    cubePNG(ref.current, {
+    cubeSVG(ref.current, {
       colorScheme: {
         [Face.U]: "#FEFE00",
         [Face.R]: "#00D800",
