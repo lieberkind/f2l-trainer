@@ -73,7 +73,7 @@ export interface Props {
   onCloseModal: (casesToTrain: AlgId[]) => void;
 }
 
-const CasesModal: React.FC<Props> = (props) => {
+const CasesModal = (props: Props) => {
   const [state, dispatch] = React.useReducer(reducer, {
     casesToTrain: props.casesToTrain,
   });

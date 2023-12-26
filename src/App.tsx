@@ -6,7 +6,7 @@ import * as Util from "./util";
 import CasesModal from "./CasesModal";
 import { Cube } from "./cube";
 
-const TimerComponent: React.FC<{ timer: Timer.Timer }> = (props) => {
+const TimerComponent = (props: { timer: Timer.Timer }) => {
   return (
     <div>
       {Timer.isInitial(props.timer)
@@ -155,23 +155,21 @@ const reducer = (state: State, action: Action): State => {
 | Algorithm
 |------------------------------------------------------------------------------
 */
-const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean }> = React.memo(
-  (props) => {
-    const moves = props.alg.scramble.split(" ");
-    return (
-      <>
-        <div>
-          {moves.map((move, idx) => {
-            return <div key={idx}>{move}</div>;
-          })}
-        </div>
-        <div>
-          <Cube scramble={props.alg.scramble} height={200} width={200} />
-        </div>
-      </>
-    );
-  }
-);
+const Algorithm = React.memo((props: { alg: Alg; showSolutions: boolean }) => {
+  const moves = props.alg.scramble.split(" ");
+  return (
+    <>
+      <div>
+        {moves.map((move, idx) => {
+          return <div key={idx}>{move}</div>;
+        })}
+      </div>
+      <div>
+        <Cube scramble={props.alg.scramble} height={200} width={200} />
+      </div>
+    </>
+  );
+});
 
 /*
 |------------------------------------------------------------------------------
@@ -184,50 +182,49 @@ interface Time {
   alg: Alg;
 }
 
-const Times: React.FC<{
-  times: Time[];
-  dispatch: React.Dispatch<Action>;
-}> = React.memo((props) => {
-  const sumOfTimes = props.times
-    .map((time) => time.timeInDeciSeconds)
-    .reduce(sum, 0);
-  const avarage =
-    props.times.length === 0 ? 0 : sumOfTimes / props.times.length;
+const Times = React.memo(
+  (props: { times: Time[]; dispatch: React.Dispatch<Action> }) => {
+    const sumOfTimes = props.times
+      .map((time) => time.timeInDeciSeconds)
+      .reduce(sum, 0);
+    const avarage =
+      props.times.length === 0 ? 0 : sumOfTimes / props.times.length;
 
-  const times = [...props.times].reverse();
+    const times = [...props.times].reverse();
 
-  return (
-    <div>
-      <table>
-        <thead>
-          <tr>
-            <th>Time (avg: {Util.format(avarage)})</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {times.map((time) => {
-            return (
-              <tr key={time.recordedAt}>
-                <td>{Util.format(time.timeInDeciSeconds)}</td>
-                <td
-                  onClick={() =>
-                    props.dispatch({
-                      type: ActionType.DeleteTime,
-                      recordedAt: time.recordedAt,
-                    })
-                  }
-                >
-                  x
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-});
+    return (
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>Time (avg: {Util.format(avarage)})</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {times.map((time) => {
+              return (
+                <tr key={time.recordedAt}>
+                  <td>{Util.format(time.timeInDeciSeconds)}</td>
+                  <td
+                    onClick={() =>
+                      props.dispatch({
+                        type: ActionType.DeleteTime,
+                        recordedAt: time.recordedAt,
+                      })
+                    }
+                  >
+                    x
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+);
 
 const sum = (a: number, b: number) => a + b;
 
@@ -236,41 +233,43 @@ const sum = (a: number, b: number) => a + b;
 | Settings
 |------------------------------------------------------------------------------
 */
-const Settings: React.FC<{
-  showSolutions: boolean;
-  goToNextCaseAfterSolve: boolean;
-  dispatch: React.Dispatch<Action>;
-}> = React.memo((props) => {
-  const toggleShowSolutions = () =>
-    props.dispatch({ type: ActionType.ToggleShowSolutions });
+const Settings = React.memo(
+  (props: {
+    showSolutions: boolean;
+    goToNextCaseAfterSolve: boolean;
+    dispatch: React.Dispatch<Action>;
+  }) => {
+    const toggleShowSolutions = () =>
+      props.dispatch({ type: ActionType.ToggleShowSolutions });
 
-  const toggleGoToNextCaseAfterSolve = () =>
-    props.dispatch({ type: ActionType.ToggleGoToNextCaseAfterSolve });
+    const toggleGoToNextCaseAfterSolve = () =>
+      props.dispatch({ type: ActionType.ToggleGoToNextCaseAfterSolve });
 
-  const showCasesModal = () =>
-    props.dispatch({ type: ActionType.ShowCasesModal });
-  return (
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={props.showSolutions}
-          onChange={toggleShowSolutions}
-        />
-        Show solutions
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          checked={props.goToNextCaseAfterSolve}
-          onChange={toggleGoToNextCaseAfterSolve}
-        />
-        Go to next case after solve
-      </label>
-      <button onClick={showCasesModal}>Select cases...</button>
-    </div>
-  );
-});
+    const showCasesModal = () =>
+      props.dispatch({ type: ActionType.ShowCasesModal });
+    return (
+      <div>
+        <label>
+          <input
+            type="checkbox"
+            checked={props.showSolutions}
+            onChange={toggleShowSolutions}
+          />
+          Show solutions
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={props.goToNextCaseAfterSolve}
+            onChange={toggleGoToNextCaseAfterSolve}
+          />
+          Go to next case after solve
+        </label>
+        <button onClick={showCasesModal}>Select cases...</button>
+      </div>
+    );
+  }
+);
 
 /*
 |------------------------------------------------------------------------------
