@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@mui/joy";
 
 import * as Timer from "./Timer";
 import algs, { Alg, AlgId } from "./algs";
@@ -265,7 +266,7 @@ const Settings = React.memo(
           />
           Go to next case after solve
         </label>
-        <button onClick={showCasesModal}>Select cases...</button>
+        <Button onClick={showCasesModal}>Select cases...</Button>
       </div>
     );
   }
