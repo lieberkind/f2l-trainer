@@ -394,8 +394,8 @@ function App() {
               <div>
                 <ul>
                   <li>Solutions:</li>
-                  {state.currentAlg.solutions.map((solution) => {
-                    return <li>{solution}</li>;
+                  {state.currentAlg.solutions.map((solution, index) => {
+                    return <li key={index}>{solution}</li>;
                   })}
                 </ul>
               </div>
