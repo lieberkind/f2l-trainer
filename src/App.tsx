@@ -9,14 +9,7 @@ import { Cube } from "./cube";
 
 const TimerComponent: React.FC<{ timer: Timer.Timer }> = (props) => {
   return (
-    <div
-      className={classNames([
-        "mb-4",
-        "text-4xl",
-        "font-mono",
-        { "text-green-700": Timer.isReady(props.timer) },
-      ])}
-    >
+    <div>
       {Timer.isInitial(props.timer)
         ? "Ready"
         : Util.format(Timer.getTime(props.timer))}
@@ -168,23 +161,12 @@ const Algorithm: React.FC<{ alg: Alg; showSolutions: boolean }> = React.memo(
     const moves = props.alg.scramble.split(" ");
     return (
       <>
-        <div className="mb-5 flex">
+        <div>
           {moves.map((move, idx) => {
-            return (
-              <div
-                className={classNames([
-                  "text-3xl",
-                  "font-mono",
-                  { "ml-6": idx !== 0 },
-                ])}
-                key={idx}
-              >
-                {move}
-              </div>
-            );
+            return <div key={idx}>{move}</div>;
           })}
         </div>
-        <div className="flex items-center mb-10">
+        <div>
           <Cube scramble={props.alg.scramble} height={200} width={200} />
         </div>
       </>
@@ -216,25 +198,20 @@ const Times: React.FC<{
   const times = [...props.times].reverse();
 
   return (
-    <div className="max-h-full overflow-y-scroll relative">
-      <table className="w-full">
-        <thead className="sticky top-0">
+    <div>
+      <table>
+        <thead>
           <tr>
-            <th className="pl-2 border-b-2 border-teal-300 text-left border-teal-300 sticky top-0 bg-teal-800 text-teal-300">
-              Time (avg: {Util.format(avarage)})
-            </th>
-            <th className="sticky top-0 border-b-2 border-teal-300 bg-teal-800"></th>
+            <th>Time (avg: {Util.format(avarage)})</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           {times.map((time) => {
             return (
-              <tr key={time.recordedAt} className="relative">
-                <td className="pl-2 border-b-2 border-teal-300">
-                  {Util.format(time.timeInDeciSeconds)}
-                </td>
+              <tr key={time.recordedAt}>
+                <td>{Util.format(time.timeInDeciSeconds)}</td>
                 <td
-                  className="border-2 hover:bg-red-800 hover:text-red-300 hover:cursor-pointer border-teal-300 bg-teal-800 text-center text-teal-300"
                   onClick={() =>
                     props.dispatch({
                       type: ActionType.DeleteTime,
@@ -274,31 +251,24 @@ const Settings: React.FC<{
   const showCasesModal = () =>
     props.dispatch({ type: ActionType.ShowCasesModal });
   return (
-    <div className="border-b-2 border-bottom border-teal-300 p-2 ">
-      <label className="flex items-center mb-2">
+    <div>
+      <label>
         <input
-          className="block mr-2"
           type="checkbox"
           checked={props.showSolutions}
           onChange={toggleShowSolutions}
         />
         Show solutions
       </label>
-      <label className="flex items-center mb-2">
+      <label>
         <input
-          className="block mr-2"
           type="checkbox"
           checked={props.goToNextCaseAfterSolve}
           onChange={toggleGoToNextCaseAfterSolve}
         />
         Go to next case after solve
       </label>
-      <button
-        className="border-teal-300 block w-full border-2 p-1 bg-teal-800 text-teal-300 rounded-md"
-        onClick={showCasesModal}
-      >
-        Select cases...
-      </button>
+      <button onClick={showCasesModal}>Select cases...</button>
     </div>
   );
 });
@@ -397,8 +367,8 @@ function App() {
 
   return (
     <div>
-      <div className="h-screen w-full flex">
-        <div className="h-screen border-r-2 border-teal-300 w-64 overflow-hidden">
+      <div>
+        <div>
           <Settings
             showSolutions={state.showSolutions}
             goToNextCaseAfterSolve={state.goToNextCaseAfterSolve}
@@ -406,8 +376,8 @@ function App() {
           />
           <Times times={state.times} dispatch={dispatch} />
         </div>
-        <div className="flex pt-2 flex-col items-center justify-between flex-grow">
-          <div className="flex flex-col items-center flex-grow w-full">
+        <div>
+          <div>
             <Algorithm
               alg={state.currentAlg}
               showSolutions={state.showSolutions}
@@ -416,7 +386,6 @@ function App() {
 
             {!state.goToNextCaseAfterSolve ? (
               <button
-                className="border-teal-300 border-2 p-1 bg-teal-800 text-teal-300 rounded-md mb-4"
                 onClick={() => dispatch({ type: ActionType.GoToNextCase })}
               >
                 Next case
@@ -424,19 +393,18 @@ function App() {
             ) : null}
 
             {state.showSolutions ? (
-              <div className="w-full border-t-2 border-teal-300 p-2 bg-teal-800 flex-grow text-white">
-                <ul className="">
-                  <li className="text-teal-300 font-bold">Solutions:</li>
+              <div>
+                <ul>
+                  <li>Solutions:</li>
                   {state.currentAlg.solutions.map((solution) => {
-                    return <li className="font-mono">{solution}</li>;
+                    return <li>{solution}</li>;
                   })}
                 </ul>
               </div>
             ) : null}
-            <div className="bg-teal-300 text-teal-800 w-full pl-2">
+            <div>
               All cases and solutions are based on{" "}
               <a
-                className="underline"
                 target="_blank"
                 rel="noopener noreferrer"
                 href="https://bit.ly/bestf2l"

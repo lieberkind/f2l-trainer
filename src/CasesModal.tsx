@@ -80,21 +80,12 @@ const CasesModal: React.FC<Props> = (props) => {
   });
 
   return (
-    <div className="absolute top-0 left-0 bottom-0 right-0 h-screen bg-white flex flex-col justify-between">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 overflow-scroll flex-shrink flex-grow p-2 box-border">
+    <div>
+      <div>
         {props.allCases.map((_case) => {
           const isIncluded = state.casesToTrain.includes(_case.id);
           return (
-            <label
-              key={_case.id}
-              className={classNames(
-                "flex items-center justify-between p-2 border-2 rounded-lg",
-                {
-                  "border-gray-300": !isIncluded,
-                  "border-green-500": isIncluded,
-                }
-              )}
-            >
+            <label key={_case.id}>
               <Cube scramble={_case.scramble} width={75} height={75} />
               <input
                 type="checkbox"
@@ -115,10 +106,9 @@ const CasesModal: React.FC<Props> = (props) => {
           );
         })}
       </div>
-      <div className="p-4 shadow-md relative z-10 box-border border-t-2 border-teal-300 flex justify-between">
-        <div className="flex justify-between gap-2">
+      <div>
+        <div>
           <button
-            className="border-teal-300 border-2 p-1 bg-teal-800 text-teal-300 rounded-md w-10/20"
             onClick={() => {
               dispatch({
                 type: ActionType.SelectCases,
@@ -129,7 +119,6 @@ const CasesModal: React.FC<Props> = (props) => {
             Select all
           </button>
           <button
-            className="border-teal-300 border-2 p-1 bg-teal-800 text-teal-300 rounded-md w-10/20"
             onClick={() => {
               dispatch({
                 type: ActionType.RemoveAllCases,
@@ -139,10 +128,7 @@ const CasesModal: React.FC<Props> = (props) => {
             Deselect all
           </button>
         </div>
-        <button
-          className="border-teal-300 border-2 p-1 bg-teal-800 text-teal-300 w-3/12 rounded-md"
-          onClick={() => props.onCloseModal(state.casesToTrain)}
-        >
+        <button onClick={() => props.onCloseModal(state.casesToTrain)}>
           Select cases
         </button>
       </div>
